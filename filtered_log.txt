@@ -1,0 +1,53 @@
+04-01 08:38:49.871 20762 20762 I DievMabohao: HookEntry onInit called
+04-01 08:38:49.871 20762 20762 I DievMabohao: HookEntry onHook called
+04-01 08:38:49.875 20762 20762 I DievMabohao: encase started, packageName: android
+04-01 08:38:49.910 20762 20762 I DievMabohao: encase started, packageName: com.diev.mabohao
+04-01 08:39:04.622 20762 20762 I DievMabohao: Saving rules: [{"appLabel":"Simple Live","code":"1234","id":"d281742e-6266-437d-84ed-8237bd3d3205","isEnabled":true,"packageName":"com.xycz.simple_live","prefix":"*#*#","suffix":"#*#*"}]
+04-01 08:39:04.638 20762 20762 I DievMabohao: Rules saved to SharedPreferences, commit result: true
+04-01 08:39:04.638 20762 20762 I DievMabohao: Prefs file path: /data/user/0/com.diev.mabohao/shared_prefs/diev_mabohao_rules.xml, exists: false
+04-01 08:39:04.638 20762 20762 I DievMabohao: Data dir: /data/user/0/com.diev.mabohao
+04-01 08:39:04.638 20762 20762 I DievMabohao: SharedPrefs dir: /data/user/0/com.diev.mabohao/shared_prefs, exists: false
+04-01 08:39:04.638 20762 20762 I DievMabohao: Verification - saved rules: [{"appLabel":"Simple Live","code":"1234","id":"d281742e-6266-437d-84ed-8237bd3d3205","isEnabled":true,"packageName":"com.xycz.simple_live","prefix":"*#*#","suffix":"#*#*"}]
+04-01 08:39:16.593 25205 25205 I DievMabohao: HookEntry onInit called
+04-01 08:39:16.593 25205 25205 I DievMabohao: HookEntry onHook called
+04-01 08:39:16.595 25205 25205 I DievMabohao: encase started, packageName: android
+04-01 08:39:16.631 25205 25205 I DievMabohao: encase started, packageName: com.android.contacts
+04-01 08:39:16.631 25205 25205 I DievMabohao: Loading hook for com.android.contacts
+04-01 08:39:16.631 25205 25205 I DievMabohao: Found class: SpecialCharSequenceMgr
+04-01 08:39:16.636 25205 25205 I DievMabohao: Hook installed successfully
+04-01 08:39:17.527 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:17.527 25205 25205 I DievMabohao: Input code: *
+04-01 08:39:17.532 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:17.532 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:17.532 25205 25205 I DievMabohao: No rules found
+04-01 08:39:17.762 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:17.762 25205 25205 I DievMabohao: Input code: *#
+04-01 08:39:17.764 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:17.764 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:17.764 25205 25205 I DievMabohao: No rules found
+04-01 08:39:18.019 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:18.019 25205 25205 I DievMabohao: Input code: *#*
+04-01 08:39:18.024 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:18.024 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:18.024 25205 25205 I DievMabohao: No rules found
+04-01 08:39:18.252 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:18.252 25205 25205 I DievMabohao: Input code: *#*#
+04-01 08:39:18.259 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:18.259 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:18.259 25205 25205 I DievMabohao: No rules found
+04-01 08:39:18.939 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:18.939 25205 25205 I DievMabohao: Input code: *#*#1
+04-01 08:39:18.942 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:18.942 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:18.942 25205 25205 I DievMabohao: No rules found
+04-01 08:39:19.125 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:19.125 25205 25205 I DievMabohao: Input code: *#*#12
+04-01 08:39:19.129 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:19.129 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:19.129 25205 25205 I DievMabohao: No rules found
+04-01 08:39:19.336 25205 25205 I DievMabohao: Hook triggered!
+04-01 08:39:19.336 25205 25205 I DievMabohao: Input code: *#*#123
+04-01 08:39:19.340 25205 25205 I DievMabohao: XSharedPreferences rules: null
+04-01 08:39:19.340 25205 25205 I DievMabohao: Rules JSON: null
+04-01 08:39:19.340 25205 25205 I DievMabohao: No rules found
+04-01 08:

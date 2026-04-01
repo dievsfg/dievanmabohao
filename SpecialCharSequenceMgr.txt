@@ -1,0 +1,292 @@
+//
+// Decompiled by Jadx - 625ms
+//
+package com.android.contacts;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Build;
+import android.os.Looper;
+import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.android.contacts.util.QRCodeEncoder;
+import com.android.miuicontacts.i18n.CustomizationUtils;
+import com.android.miuicontacts.msim.MSimCardUtils;
+import com.android.miuicontacts.phone.PhoneAdapter;
+import com.miui.contacts.common.SystemUtil;
+import com.miui.telephony.TelephonyManagerUtils;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import java.lang.reflect.Method;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import miui.telephony.TelephonyManagerCompat;
+import miuix.appcompat.app.AlertDialog;
+import rx.RxDisposableManager;
+
+public class SpecialCharSequenceMgr {
+    private static QueryHandler a;
+    private static AlertDialog b;
+
+    public static void f() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Log.wtf("SpecialCharSequenceMgr", "cleanup() is called outside the main thread");
+            return;
+        }
+        QueryHandler queryHandler = a;
+        if (queryHandler != null) {
+            queryHandler.a();
+            a = null;
+        }
+    }
+
+    private static void g(Context context, String str, String str2) {
+        Context applicationContext = context.getApplicationContext();
+        ClipboardManager clipboardManager = (ClipboardManager) applicationContext.getSystemService("clipboard");
+        if (!TextUtils.isEmpty(str2)) {
+            str2 = str2.trim();
+        }
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(str, str2));
+        Toast.makeText(applicationContext, String.format("%s%s", str, applicationContext.getString(0x7f110642)), 0).show();
+    }
+
+    public static void h() {
+        AlertDialog alertDialog = b;
+        if (alertDialog != null) {
+            alertDialog.dismiss();
+            b = null;
+        }
+    }
+
+    private static List i(List list, String str) {
+        boolean z;
+        Object obj;
+        ArrayList arrayList = new ArrayList();
+        if (list != null && !list.isEmpty()) {
+            if (MSimCardUtils.b().p() && list.size() > 0) {
+                list = list.subList(0, 1);
+            }
+            if (list.size() > 1) {
+                z = true;
+            } else {
+                z = false;
+            }
+            for (int i = 0; i < list.size(); i++) {
+                if (z) {
+                    obj = Integer.valueOf(i + 1);
+                } else {
+                    obj = "";
+                }
+                arrayList.add(String.format("%s%s: %s", str, obj, list.get(i)));
+            }
+        }
+        return arrayList;
+    }
+
+    public static boolean j(Context context, String str) {
+        if (TextUtils.isEmpty(str)) {
+            return false;
+        }
+        String stripSeparators = PhoneNumberUtils.stripSeparators(str);
+        if (!k(context, stripSeparators) && !m(context, stripSeparators) && !l(context, stripSeparators) && !n(context, stripSeparators)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean k(Context context, String str) {
+        if ("*#06#".equals(str)) {
+            u(context);
+            return true;
+        }
+        return false;
+    }
+
+    static boolean l(Context context, String str) {
+        if ((str.startsWith("**04") || str.startsWith("**05")) && str.endsWith("#")) {
+            return PhoneAdapter.a(str);
+        }
+        return false;
+    }
+
+    private static boolean m(Context context, String str) {
+        if (str.equals("*#07#")) {
+            return w(context);
+        }
+        return false;
+    }
+
+    static boolean n(Context context, String str) {
+        if (context == null) {
+            Log.e("SpecialCharSequenceMgr", "context can't null");
+            return false;
+        }
+        int length = str.length();
+        if (length <= 8 || !str.startsWith("*#*#") || !str.endsWith("#*#*")) {
+            return false;
+        }
+        TelephonyManagerUtils.a(context, str.substring(4, length - 4));
+        return true;
+    }
+
+    public static BarcodeTask o(String str, Context context) {
+        return new BarcodeTask(str, TextUtils.split(str, ": ")[1], context.getResources().getDimensionPixelSize(0x7f0706c8), context.getResources().getDimensionPixelSize(0x7f0706c6));
+    }
+
+    public static BarcodeResult p(BarcodeTask barcodeTask) {
+        return new BarcodeResult(barcodeTask.a, QRCodeEncoder.BarcodeGenerator.a(barcodeTask.b, barcodeTask.c, barcodeTask.d));
+    }
+
+    public static ObservableSource q(Context context, String str) {
+        return Observable.r(new C(str, context)).J(Schedulers.a()).u(new D());
+    }
+
+    public static boolean r(String str, Context context, View view) {
+        String str2;
+        String[] split = TextUtils.split(str, ":");
+        if (split.length > 1) {
+            str2 = split[0];
+        } else {
+            str2 = "";
+        }
+        g(context, str2, split[split.length - 1]);
+        return true;
+    }
+
+    private static void s(Context context, List list, ViewGroup viewGroup) {
+        RxDisposableManager.c("SpecialCharSequenceMgr", Observable.s(list).o(new B(context), Runtime.getRuntime().availableProcessors() * 2).w(AndroidSchedulers.a()).K(new SpecialCharSequenceMgr$1(viewGroup, context)));
+    }
+
+    private static boolean t() {
+        if (SystemUtil.f("IN") && "kenzo".equals(Build.DEVICE)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static void u(Context context) {
+        MSimCardUtils b2 = MSimCardUtils.b();
+        ArrayList arrayList = new ArrayList();
+        String a2 = z.a();
+        if (a2 != null) {
+            ArrayList arrayList2 = new ArrayList();
+            arrayList2.add("SN: " + a2);
+            arrayList.addAll(arrayList2);
+        } else {
+            Log.i("SpecialCharSequenceMgr", "showDeviceIdPanel: serial is null or serial is unknown");
+        }
+        if (!t()) {
+            arrayList.addAll(i(b2.c(), context.getString(0x7f110390)));
+        }
+        List i = i(b2.a(), context.getString(0x7f110341));
+        if (CustomizationUtils.b()) {
+            ArrayList arrayList3 = new ArrayList();
+            for (int i2 = 0; i2 < i.size(); i2++) {
+                String deviceSoftwareVersion = TelephonyManagerCompat.getDeviceSoftwareVersion(i2);
+                if (TextUtils.isEmpty(deviceSoftwareVersion)) {
+                    deviceSoftwareVersion = context.getString(0x7f110660);
+                }
+                arrayList3.add(deviceSoftwareVersion);
+            }
+            List i3 = i(arrayList3, context.getString(0x7f110602));
+            for (int i4 = 0; i4 < i.size(); i4++) {
+                arrayList.add((String) i.get(i4));
+                arrayList.add((String) i3.get(i4));
+            }
+        } else {
+            arrayList.addAll(i);
+        }
+        if (arrayList.isEmpty()) {
+            Toast.makeText(context, 0x7f11065d, 0).show();
+            return;
+        }
+        try {
+            Class<?> cls = Class.forName("miui.telephony.TelephonyManagerEx");
+            Method method = cls.getMethod("getDefault", null);
+            method.setAccessible(true);
+            String obj = cls.getMethod("getProductEid", null).invoke(method.invoke(null, null), null).toString();
+            if (obj != null && !obj.isEmpty()) {
+                ArrayList arrayList4 = new ArrayList();
+                arrayList4.add("EID: " + obj);
+                arrayList.addAll(arrayList4);
+            } else {
+                Log.i("SpecialCharSequenceMgr", "showDeviceIdPanel: Eid is null or Eid is unknown");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        v(context, arrayList);
+    }
+
+    private static void v(Context context, ArrayList arrayList) {
+        h();
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.D(context.getResources().getString(0x7f11041c));
+        View inflate = builder.b().getLayoutInflater().inflate(0x7f0d00cc, (ViewGroup) null);
+        builder.E(inflate);
+        ViewGroup viewGroup = (LinearLayout) inflate.findViewById(0x7f0a0145);
+        ArrayList arrayList2 = new ArrayList();
+        Iterator it = arrayList.iterator();
+        while (it.hasNext()) {
+            String str = (String) it.next();
+            View inflate2 = LayoutInflater.from(context).inflate(0x7f0d00cb, viewGroup, false);
+            TextView textView = (TextView) inflate2.findViewById(0x7f0a0514);
+            ImageView imageView = (ImageView) inflate2.findViewById(0x7f0a00b7);
+            textView.setText(str);
+            if (!TextUtils.isEmpty(str) && !TextUtils.isEmpty(str.replace("", "\u200b "))) {
+                textView.setContentDescription(str.replace("", "\u200b ").trim());
+            }
+            inflate2.setTag(str);
+            viewGroup.addView(inflate2);
+            arrayList2.add(imageView);
+            inflate2.setOnLongClickListener(new A(str, context));
+        }
+        s(context, arrayList, viewGroup);
+        builder.E(inflate).s(0x0104000a, (DialogInterface.OnClickListener) null).h(true).F();
+    }
+
+    private static boolean w(Context context) {
+        if (!SystemUtil.f0()) {
+            return false;
+        }
+        float k = SystemUtil.k();
+        float l = SystemUtil.l();
+        DecimalFormat decimalFormat = new DecimalFormat("0.000");
+        if (k != 0.0f) {
+            h();
+            StringBuilder sb = new StringBuilder();
+            sb.append("India SAR 1g limit: 1.6W/Kg\n");
+            if (SystemUtil.q0(context)) {
+                sb.append("Head SAR: ");
+                sb.append(decimalFormat.format(l));
+                sb.append("W/Kg\n");
+            }
+            sb.append("Body SAR: ");
+            sb.append(decimalFormat.format(k));
+            sb.append("W/Kg");
+            b = new AlertDialog.Builder(context).D("SAR").q(sb.toString()).y(0x0104000a, (DialogInterface.OnClickListener) null).h(true).F();
+            return true;
+        }
+        float m = SystemUtil.m();
+        if (m == 0.0f) {
+            return false;
+        }
+        h();
+        b = new AlertDialog.Builder(context).D("SAR").q("India SAR 1g limit: 1.6W/Kg\nSAR value: " + m + "W/Kg").y(0x0104000a, (DialogInterface.OnClickListener) null).h(true).F();
+        return true;
+    }
+}
