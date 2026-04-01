@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -96,6 +97,31 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
+        
+        binding.btnImportExport.setOnClickListener { view ->
+            showImportExportMenu(view)
+        }
+    }
+
+    private fun showImportExportMenu(view: View) {
+        val popupMenu = PopupMenu(this, view)
+        popupMenu.menu.add(0, 1, 0, R.string.import_rules)
+        popupMenu.menu.add(0, 2, 0, R.string.export_rules)
+        
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                1 -> {
+                    importLauncher.launch("application/json")
+                    true
+                }
+                2 -> {
+                    exportLauncher.launch("diev_mabohao_rules.json")
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
     }
 
     private fun updateModuleStatus() {
