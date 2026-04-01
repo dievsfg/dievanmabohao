@@ -3,7 +3,6 @@ package com.diev.mabohao.ui
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -65,6 +64,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            onOptionsItemSelected(menuItem)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -128,11 +130,6 @@ class MainActivity : AppCompatActivity() {
                 putString(RuleRepository.KEY_RULES, newJson)
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -1,5 +1,7 @@
 # 暗码启动器 (DievMabohao)
 
+> 🤖 **该项目完全由 AI (OpenCode) 生成**
+
 一款基于 [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) 开发的 LSPosed 模块，允许用户通过在拨号盘输入自定义暗码快速启动指定应用。
 
 > ⚠️ **注意**：本模块仅针对小米澎湃OS 3 (HyperOS 3) 的通讯录与拨号应用进行适配。
