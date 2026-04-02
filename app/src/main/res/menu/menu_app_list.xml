@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_show_system"
+        android:checkable="true"
+        android:title="显示系统应用" />
+    <item
+        android:title="排序方式">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menu_sort_by_label"
+                    android:title="按应用名称" />
+                <item
+                    android:id="@+id/menu_sort_by_package_name"
+                    android:title="按包名" />
+                <item
+                    android:id="@+id/menu_sort_by_install_time"
+                    android:title="按安装时间" />
+                <item
+                    android:id="@+id/menu_sort_by_update_time"
+                    android:title="按更新时间" />
+            </group>
+            <item
+                android:id="@+id/menu_reverse_order"
+                android:checkable="true"
+                android:title="反转顺序" />
+        </menu>
+    </item>
+</menu>

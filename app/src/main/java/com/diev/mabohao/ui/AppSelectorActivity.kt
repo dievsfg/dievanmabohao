@@ -1,29 +1,31 @@
 package com.diev.mabohao.ui
 
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.diev.mabohao.R
 import com.diev.mabohao.databinding.ActivityAppSelectorBinding
 import com.diev.mabohao.databinding.ItemAppBinding
-import kotlinx.coroutines.Dispatchers
+import com.diev.mabohao.util.AppCacheHelper
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class AppSelectorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppSelectorBinding
     private lateinit var adapter: AppAdapter
-    private var allApps: List<AppInfo> = emptyList()
+    private lateinit var layoutManager: LinearLayoutManager
+    private var currentQuery: String = ""
+    private var previousListSize: Int = 0
+    private var shouldPreserveScrollPosition: Boolean = false
 
     data class AppInfo(
         val packageName: String,
@@ -39,8 +41,10 @@ class AppSelectorActivity : AppCompatActivity() {
         setupToolbar()
         setupRecyclerView()
         setupSwipeRefresh()
-        loadApps()
         setupSearch()
+        setupFilterButton()
+        observeApps()
+        loadApps()
     }
 
     private fun setupToolbar() {
@@ -52,6 +56,7 @@ class AppSelectorActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+        layoutManager = LinearLayoutManager(this)
         adapter = AppAdapter { appInfo ->
             val resultIntent = Intent().apply {
                 putExtra("package_name", appInfo.packageName)
@@ -61,7 +66,7 @@ class AppSelectorActivity : AppCompatActivity() {
             finish()
         }
         
-        binding.rvApps.layoutManager = LinearLayoutManager(this)
+        binding.rvApps.layoutManager = layoutManager
         binding.rvApps.adapter = adapter
     }
 
@@ -71,55 +76,155 @@ class AppSelectorActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadApps() {
-        binding.swipeRefresh.isRefreshing = true
-        
-        lifecycleScope.launch {
-            val apps = withContext(Dispatchers.IO) {
-                loadAppsInBackground()
-            }
-            
-            allApps = apps
-            adapter.submitList(apps)
-            binding.swipeRefresh.isRefreshing = false
-        }
-    }
-
-    private fun loadAppsInBackground(): List<AppInfo> {
-        val pm = packageManager
-        return pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 || isLaunchableApp(pm, it.packageName) }
-            .map { appInfo ->
-                AppInfo(
-                    packageName = appInfo.packageName,
-                    appName = pm.getApplicationLabel(appInfo).toString(),
-                    icon = pm.getApplicationIcon(appInfo)
-                )
-            }
-            .sortedBy { it.appName.lowercase() }
-    }
-
-    private fun isLaunchableApp(pm: PackageManager, packageName: String): Boolean {
-        return pm.getLaunchIntentForPackage(packageName) != null
-    }
-
     private fun setupSearch() {
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                val query = s.toString().lowercase()
-                val filtered = if (query.isEmpty()) {
-                    allApps
-                } else {
-                    allApps.filter {
-                        it.appName.lowercase().contains(query) ||
-                        it.packageName.lowercase().contains(query)
-                    }
-                }
-                adapter.submitList(filtered)
+                currentQuery = s.toString()
+                AppCacheHelper.applyFilterAndSort(currentQuery)
             }
         })
+    }
+
+    private fun setupFilterButton() {
+        binding.btnFilter.setOnClickListener { view ->
+            showFilterMenu(view)
+        }
+    }
+
+    private fun showFilterMenu(view: android.view.View) {
+        val popupMenu = PopupMenu(this, view)
+        popupMenu.menuInflater.inflate(R.menu.menu_app_list, popupMenu.menu)
+        
+        // 设置当前状态
+        popupMenu.menu.findItem(R.id.menu_show_system).isChecked = AppCacheHelper.showSystemApps
+        when (AppCacheHelper.sortMethod) {
+            AppCacheHelper.SortMethod.BY_LABEL -> popupMenu.menu.findItem(R.id.menu_sort_by_label).isChecked = true
+            AppCacheHelper.SortMethod.BY_PACKAGE_NAME -> popupMenu.menu.findItem(R.id.menu_sort_by_package_name).isChecked = true
+            AppCacheHelper.SortMethod.BY_INSTALL_TIME -> popupMenu.menu.findItem(R.id.menu_sort_by_install_time).isChecked = true
+            AppCacheHelper.SortMethod.BY_UPDATE_TIME -> popupMenu.menu.findItem(R.id.menu_sort_by_update_time).isChecked = true
+        }
+        popupMenu.menu.findItem(R.id.menu_reverse_order).isChecked = AppCacheHelper.reverseOrder
+        
+        popupMenu.setOnMenuItemClickListener { item ->
+            // 只有倒序操作才保持滚动位置
+            shouldPreserveScrollPosition = item.itemId == R.id.menu_reverse_order
+            
+            when (item.itemId) {
+                R.id.menu_show_system -> {
+                    item.isChecked = !item.isChecked
+                    AppCacheHelper.showSystemApps = item.isChecked
+                }
+                R.id.menu_sort_by_label -> {
+                    item.isChecked = true
+                    AppCacheHelper.sortMethod = AppCacheHelper.SortMethod.BY_LABEL
+                }
+                R.id.menu_sort_by_package_name -> {
+                    item.isChecked = true
+                    AppCacheHelper.sortMethod = AppCacheHelper.SortMethod.BY_PACKAGE_NAME
+                }
+                R.id.menu_sort_by_install_time -> {
+                    item.isChecked = true
+                    AppCacheHelper.sortMethod = AppCacheHelper.SortMethod.BY_INSTALL_TIME
+                }
+                R.id.menu_sort_by_update_time -> {
+                    item.isChecked = true
+                    AppCacheHelper.sortMethod = AppCacheHelper.SortMethod.BY_UPDATE_TIME
+                }
+                R.id.menu_reverse_order -> {
+                    item.isChecked = !item.isChecked
+                    AppCacheHelper.reverseOrder = item.isChecked
+                }
+            }
+            AppCacheHelper.applyFilterAndSort(currentQuery)
+            true
+        }
+        popupMenu.show()
+    }
+
+    /**
+     * 保存当前滚动位置的相对比例
+     */
+    private fun saveScrollPosition(): ScrollPosition {
+        val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+        val firstVisibleView = layoutManager.findViewByPosition(firstVisiblePosition)
+        val offset = firstVisibleView?.top ?: 0
+        val totalItemCount = adapter.itemCount
+        
+        return ScrollPosition(
+            firstVisiblePosition = firstVisiblePosition,
+            offset = offset,
+            totalItemCount = totalItemCount
+        )
+    }
+
+    /**
+     * 恢复滚动位置，根据比例计算新位置
+     */
+    private fun restoreScrollPosition(position: ScrollPosition) {
+        val newTotalItemCount = adapter.itemCount
+        if (position.totalItemCount == 0 || newTotalItemCount == 0) return
+        
+        // 计算当前可见位置在列表中的相对比例
+        val ratio = position.firstVisiblePosition.toFloat() / position.totalItemCount.toFloat()
+        
+        // 根据比例计算新位置
+        val newFirstVisiblePosition = (ratio * newTotalItemCount).toInt().coerceIn(0, newTotalItemCount - 1)
+        
+        // 计算偏移量的比例
+        val offsetRatio = position.offset.toFloat()
+        
+        // 滚动到新位置
+        layoutManager.scrollToPositionWithOffset(newFirstVisiblePosition, offsetRatio.toInt())
+    }
+
+    data class ScrollPosition(
+        val firstVisiblePosition: Int,
+        val offset: Int,
+        val totalItemCount: Int
+    )
+
+    private fun observeApps() {
+        lifecycleScope.launch {
+            AppCacheHelper.appList.collect { apps ->
+                // 保存滚动位置（仅当需要保持位置时）
+                val scrollPosition = if (shouldPreserveScrollPosition && previousListSize > 0) {
+                    saveScrollPosition()
+                } else {
+                    null
+                }
+                
+                val appInfoList = apps.map { cachedApp ->
+                    AppInfo(
+                        packageName = cachedApp.packageName,
+                        appName = cachedApp.appName,
+                        icon = cachedApp.icon
+                    )
+                }
+                
+                adapter.submitList(appInfoList) {
+                    // 列表更新完成后恢复滚动位置
+                    if (scrollPosition != null) {
+                        restoreScrollPosition(scrollPosition)
+                        shouldPreserveScrollPosition = false
+                    }
+                    previousListSize = appInfoList.size
+                }
+            }
+        }
+        
+        lifecycleScope.launch {
+            AppCacheHelper.isRefreshing.collect { isRefreshing ->
+                binding.swipeRefresh.isRefreshing = isRefreshing
+            }
+        }
+    }
+
+    private fun loadApps() {
+        lifecycleScope.launch {
+            AppCacheHelper.loadApps(packageManager)
+        }
     }
 
     class AppAdapter(
