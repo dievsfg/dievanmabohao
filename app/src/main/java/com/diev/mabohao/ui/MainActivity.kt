@@ -154,6 +154,7 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG, "Toggling rule $ruleId to $enabled, new JSON: $newJson")
             prefs(RuleRepository.PREFS_NAME).edit {
                 putString(RuleRepository.KEY_RULES, newJson)
+                putLong(RuleRepository.KEY_RULES_TIMESTAMP, System.currentTimeMillis())
             }
         }
     }

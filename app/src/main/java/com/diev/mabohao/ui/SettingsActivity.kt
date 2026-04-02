@@ -65,6 +65,7 @@ class SettingsActivity : AppCompatActivity() {
             putString(RuleRepository.KEY_SUFFIX, suffix)
             putBoolean(RuleRepository.KEY_ENABLE_LOGGING, enableLogging)
             putBoolean(RuleRepository.KEY_ENABLE_TOAST, enableToast)
+            putLong(RuleRepository.KEY_RULES_TIMESTAMP, System.currentTimeMillis())
         }
         
         Snackbar.make(binding.root, "设置已保存", Snackbar.LENGTH_SHORT).show()

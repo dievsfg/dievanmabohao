@@ -213,6 +213,7 @@ class RuleEditActivity : AppCompatActivity() {
         Log.i(TAG, "Saving rule: $newJson")
         prefs(RuleRepository.PREFS_NAME).edit {
             putString(RuleRepository.KEY_RULES, newJson)
+            putLong(RuleRepository.KEY_RULES_TIMESTAMP, System.currentTimeMillis())
         }
         
         Snackbar.make(binding.root, R.string.rule_saved, Snackbar.LENGTH_SHORT).show()
@@ -235,6 +236,7 @@ class RuleEditActivity : AppCompatActivity() {
                     Log.i(TAG, "After delete, rules: $newJson")
                     prefs(RuleRepository.PREFS_NAME).edit {
                         putString(RuleRepository.KEY_RULES, newJson)
+                        putLong(RuleRepository.KEY_RULES_TIMESTAMP, System.currentTimeMillis())
                     }
                     
                     finish()

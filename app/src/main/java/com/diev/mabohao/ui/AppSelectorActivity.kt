@@ -9,10 +9,16 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.diev.mabohao.databinding.ActivityAppSelectorBinding
 import com.diev.mabohao.databinding.ItemAppBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AppSelectorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppSelectorBinding
@@ -62,13 +68,26 @@ class AppSelectorActivity : AppCompatActivity() {
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
             loadApps()
-            binding.swipeRefresh.isRefreshing = false
         }
     }
 
     private fun loadApps() {
+        binding.swipeRefresh.isRefreshing = true
+        
+        lifecycleScope.launch {
+            val apps = withContext(Dispatchers.IO) {
+                loadAppsInBackground()
+            }
+            
+            allApps = apps
+            adapter.submitList(apps)
+            binding.swipeRefresh.isRefreshing = false
+        }
+    }
+
+    private fun loadAppsInBackground(): List<AppInfo> {
         val pm = packageManager
-        val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+        return pm.getInstalledApplications(PackageManager.GET_META_DATA)
             .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 || isLaunchableApp(pm, it.packageName) }
             .map { appInfo ->
                 AppInfo(
@@ -78,9 +97,6 @@ class AppSelectorActivity : AppCompatActivity() {
                 )
             }
             .sortedBy { it.appName.lowercase() }
-        
-        allApps = apps
-        adapter.submitList(apps)
     }
 
     private fun isLaunchableApp(pm: PackageManager, packageName: String): Boolean {
@@ -108,13 +124,7 @@ class AppSelectorActivity : AppCompatActivity() {
 
     class AppAdapter(
         private val onSelect: (AppInfo) -> Unit
-    ) : RecyclerView.Adapter<AppAdapter.ViewHolder>() {
-        private var apps: List<AppInfo> = emptyList()
-
-        fun submitList(newApps: List<AppInfo>) {
-            apps = newApps
-            notifyDataSetChanged()
-        }
+    ) : ListAdapter<AppInfo, AppAdapter.ViewHolder>(AppDiffCallback()) {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val binding = ItemAppBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -122,10 +132,8 @@ class AppSelectorActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(apps[position])
+            holder.bind(getItem(position))
         }
-
-        override fun getItemCount(): Int = apps.size
 
         inner class ViewHolder(private val binding: ItemAppBinding) : RecyclerView.ViewHolder(binding.root) {
             fun bind(appInfo: AppInfo) {
@@ -136,6 +144,16 @@ class AppSelectorActivity : AppCompatActivity() {
                 binding.root.setOnClickListener {
                     onSelect(appInfo)
                 }
+            }
+        }
+
+        class AppDiffCallback : DiffUtil.ItemCallback<AppInfo>() {
+            override fun areItemsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+                return oldItem.packageName == newItem.packageName
+            }
+
+            override fun areContentsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+                return oldItem == newItem
             }
         }
     }

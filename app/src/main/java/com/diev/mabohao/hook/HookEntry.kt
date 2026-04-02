@@ -8,11 +8,9 @@ import com.diev.mabohao.data.Rule
 import com.diev.mabohao.data.RuleRepository
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
-import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.factory.toClass
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import com.highcapable.yukihookapi.hook.factory.prefs
-import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -21,6 +19,28 @@ class HookEntry : IYukiHookXposedInit {
 
     companion object {
         private const val TAG = "DievMabohao"
+        
+        // 缓存的规则Map：key=暗码完整值，value=规则
+        @Volatile
+        private var cachedRulesMap: Map<String, Rule> = emptyMap()
+        
+        // 缓存的时间戳
+        @Volatile
+        private var cachedTimestamp: Long = 0L
+        
+        // 缓存的设置
+        @Volatile
+        private var cachedEnableLogging: Boolean = true
+        
+        @Volatile
+        private var cachedEnableToast: Boolean = true
+        
+        @Volatile
+        private var settingsLoaded: Boolean = false
+        
+        // 复用的Gson和TypeToken
+        private val gson = Gson()
+        private val ruleListType = object : TypeToken<List<Rule>>() {}.type
     }
 
     override fun onInit() {
@@ -61,69 +81,60 @@ class HookEntry : IYukiHookXposedInit {
                                     val context = args[0] as Context
                                     val inputCode = args[1] as String
                                     
-                                    // 读取设置
-                                    val enableLogging = prefs(RuleRepository.PREFS_NAME).getBoolean(RuleRepository.KEY_ENABLE_LOGGING, true)
-                                    val enableToast = prefs(RuleRepository.PREFS_NAME).getBoolean(RuleRepository.KEY_ENABLE_TOAST, true)
-                                    
-                                    if (enableLogging) {
-                                        Log.i(TAG, "Hook triggered! Method: ${targetMethod.name}, Input code: $inputCode")
+                                    // 首次加载或更新设置
+                                    if (!settingsLoaded) {
+                                        loadSettings(context)
                                     }
                                     
-                                    if (enableToast) {
+                                    // 检查规则是否变化
+                                    checkAndReloadRules(context)
+                                    
+                                    if (cachedEnableLogging) {
+                                        Log.i(TAG, "Hook triggered! Input code: $inputCode, rules count: ${cachedRulesMap.size}")
+                                    }
+                                    
+                                    if (cachedEnableToast) {
                                         Toast.makeText(context, "暗码检测: $inputCode", Toast.LENGTH_SHORT).show()
                                     }
                                     
-                                    // 使用prefs()读取规则
-                                    val rulesJson = prefs(RuleRepository.PREFS_NAME).getString(RuleRepository.KEY_RULES, "") ?: ""
+                                    // O(1)查找规则
+                                    val matchedRule = cachedRulesMap[inputCode]
                                     
-                                    if (enableLogging) {
-                                        Log.i(TAG, "Rules from prefs(): $rulesJson")
-                                    }
-                                    
-                                    if (rulesJson.isEmpty()) {
-                                        if (enableLogging) Log.i(TAG, "No rules found")
-                                        return@before
-                                    }
-                                    
-                                    val gson = Gson()
-                                    val type = object : TypeToken<List<Rule>>() {}.type
-                                    val rules: List<Rule> = gson.fromJson(rulesJson, type)
-                                    
-                                    if (enableLogging) Log.i(TAG, "Loaded ${rules.size} rules")
-                                    
-                                    for (rule in rules) {
-                                        if (enableLogging) Log.i(TAG, "Checking rule: ${rule.getFullCode()}, enabled: ${rule.isEnabled}")
+                                    if (matchedRule != null) {
+                                        if (cachedEnableLogging) {
+                                            Log.i(TAG, "Rule matched! Launching: ${matchedRule.packageName}")
+                                        }
                                         
-                                        if (!rule.isEnabled) continue
+                                        if (cachedEnableToast) {
+                                            Toast.makeText(context, "启动应用: ${matchedRule.packageName}", Toast.LENGTH_SHORT).show()
+                                        }
                                         
-                                        val fullCode = rule.getFullCode()
-                                        if (inputCode == fullCode) {
-                                            if (enableLogging) Log.i(TAG, "Rule matched! Launching: ${rule.packageName}")
+                                        try {
+                                            val pm = context.packageManager
+                                            val intent = pm.getLaunchIntentForPackage(matchedRule.packageName)
                                             
-                                            if (enableToast) {
-                                                Toast.makeText(context, "启动应用: ${rule.packageName}", Toast.LENGTH_SHORT).show()
-                                            }
-                                            
-                                            try {
-                                                val pm = context.packageManager
-                                                val intent = pm.getLaunchIntentForPackage(rule.packageName)
-                                                
-                                                if (intent != null) {
-                                                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                    context.startActivity(intent)
-                                                    if (enableLogging) Log.i(TAG, "App launched successfully: ${rule.packageName}")
-                                                    result = true
-                                                } else {
-                                                    if (enableLogging) Log.e(TAG, "No launch intent for package: ${rule.packageName}")
+                                            if (intent != null) {
+                                                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                context.startActivity(intent)
+                                                if (cachedEnableLogging) {
+                                                    Log.i(TAG, "App launched successfully: ${matchedRule.packageName}")
                                                 }
-                                            } catch (e: Exception) {
-                                                if (enableLogging) Log.e(TAG, "Failed to launch app: ${rule.packageName}", e)
+                                                result = true
+                                            } else {
+                                                if (cachedEnableLogging) {
+                                                    Log.e(TAG, "No launch intent for package: ${matchedRule.packageName}")
+                                                }
                                             }
-                                            return@before
+                                        } catch (e: Exception) {
+                                            if (cachedEnableLogging) {
+                                                Log.e(TAG, "Failed to launch app: ${matchedRule.packageName}", e)
+                                            }
+                                        }
+                                    } else {
+                                        if (cachedEnableLogging) {
+                                            Log.i(TAG, "No matching rule for code: $inputCode")
                                         }
                                     }
-                                    
-                                    if (enableLogging) Log.i(TAG, "No matching rule for code: $inputCode")
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Error in hook callback", e)
                                 }
@@ -138,6 +149,54 @@ class HookEntry : IYukiHookXposedInit {
                     Log.e(TAG, "Failed to hook SpecialCharSequenceMgr", e)
                 }
             }
+        }
+    }
+    
+    private fun loadSettings(context: Context) {
+        try {
+            cachedEnableLogging = context.prefs(RuleRepository.PREFS_NAME).getBoolean(RuleRepository.KEY_ENABLE_LOGGING, true)
+            cachedEnableToast = context.prefs(RuleRepository.PREFS_NAME).getBoolean(RuleRepository.KEY_ENABLE_TOAST, true)
+            settingsLoaded = true
+            Log.i(TAG, "Settings loaded: logging=$cachedEnableLogging, toast=$cachedEnableToast")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading settings", e)
+        }
+    }
+    
+    private fun checkAndReloadRules(context: Context) {
+        try {
+            val currentTimestamp = context.prefs(RuleRepository.PREFS_NAME).getLong(RuleRepository.KEY_RULES_TIMESTAMP, 0L)
+            
+            if (currentTimestamp != cachedTimestamp) {
+                Log.i(TAG, "Rules timestamp changed: $cachedTimestamp -> $currentTimestamp, reloading rules")
+                cachedTimestamp = currentTimestamp
+                
+                val rulesJson = context.prefs(RuleRepository.PREFS_NAME).getString(RuleRepository.KEY_RULES, "") ?: ""
+                
+                if (rulesJson.isEmpty()) {
+                    cachedRulesMap = emptyMap()
+                    Log.i(TAG, "Rules cleared")
+                    return
+                }
+                
+                val rulesList: List<Rule> = gson.fromJson(rulesJson, ruleListType)
+                
+                // 转换为Map，以暗码完整值为key，只包含启用的规则
+                val rulesMap = mutableMapOf<String, Rule>()
+                for (rule in rulesList) {
+                    if (rule.isEnabled) {
+                        rulesMap[rule.getFullCode()] = rule
+                    }
+                }
+                cachedRulesMap = rulesMap
+                
+                Log.i(TAG, "Rules reloaded: ${cachedRulesMap.size} enabled rules")
+                
+                // 重新加载设置
+                loadSettings(context)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking rules", e)
         }
     }
 }

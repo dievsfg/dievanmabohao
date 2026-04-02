@@ -49,6 +49,7 @@ object ImportExportUtil {
                     putString(RuleRepository.KEY_RULES, RuleRepository.toJson(exportData.rules))
                     putString(RuleRepository.KEY_PREFIX, exportData.prefix)
                     putString(RuleRepository.KEY_SUFFIX, exportData.suffix)
+                    putLong(RuleRepository.KEY_RULES_TIMESTAMP, System.currentTimeMillis())
                 }
                 
                 Log.i(TAG, "Rules imported successfully")

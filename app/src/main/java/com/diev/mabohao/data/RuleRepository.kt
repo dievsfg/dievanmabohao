@@ -12,6 +12,7 @@ object RuleRepository {
     const val KEY_SUFFIX = "global_suffix"
     const val KEY_ENABLE_LOGGING = "enable_logging"
     const val KEY_ENABLE_TOAST = "enable_toast"
+    const val KEY_RULES_TIMESTAMP = "rules_timestamp"
     
     private val gson = Gson()
 
