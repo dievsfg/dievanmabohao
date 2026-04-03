@@ -13,6 +13,9 @@ object RuleRepository {
     const val KEY_ENABLE_LOGGING = "enable_logging"
     const val KEY_ENABLE_TOAST = "enable_toast"
     const val KEY_RULES_TIMESTAMP = "rules_timestamp"
+    const val KEY_APP_LOCK_ENABLED = "app_lock_enabled"
+    const val KEY_APP_LOCK_PATTERN = "app_lock_pattern"
+    const val KEY_APP_LOCK_FINGERPRINT = "app_lock_fingerprint"
     
     private val gson = Gson()
 

@@ -12,6 +12,8 @@ recyclerview = "1.4.0"
 constraintlayout = "2.2.1"
 swiperefreshlayout = "1.1.0"
 gson = "2.11.0"
+biometric = "1.1.0"
+lifecycle-process = "2.8.3"
 
 [libraries]
 yukihookapi-api = { module = "com.highcapable.yukihookapi:api", version.ref = "yukihookapi" }
@@ -26,6 +28,8 @@ recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "r
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle-process" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
