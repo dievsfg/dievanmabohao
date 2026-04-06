@@ -28,6 +28,10 @@ gradle-8.5-bin.zip
 # Log files
 *.log
 
+# Decompiled
+contacts.apk
+contacts_decompiled/
+
 # OS specific
 Thumbs.db
 ehthumbs.db
@@ -36,3 +40,8 @@ $RECYCLE.BIN/
 ._*
 .Spotlight-V100
 .Trashes
+
+# Eclipse
+.classpath
+.project
+.settings/

@@ -1,6 +1,8 @@
 package com.diev.mabohao.hook
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.diev.mabohao.BuildConfig
@@ -79,7 +81,8 @@ class HookEntry : IYukiHookXposedInit {
                             before {
                                 try {
                                     val context = args[0] as Context
-                                    val inputCode = args[1] as String
+                                    // 移除拨号盘自动生成的空格、连字符等分隔符
+                                    val inputCode = (args[1] as String).replace(Regex("[\\s-]"), "")
                                     
                                     // 首次加载或更新设置
                                     if (!settingsLoaded) {
@@ -115,10 +118,21 @@ class HookEntry : IYukiHookXposedInit {
                                             
                                             if (intent != null) {
                                                 intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                context.startActivity(intent)
-                                                if (cachedEnableLogging) {
-                                                    Log.i(TAG, "App launched successfully: ${matchedRule.packageName}")
-                                                }
+                                                
+                                                // 延迟150ms启动，让拨号盘有时间清空内容（TwelveKeyDialerFragment中清理逻辑延时了50ms）
+                                                Handler(Looper.getMainLooper()).postDelayed({
+                                                    try {
+                                                        context.startActivity(intent)
+                                                        if (cachedEnableLogging) {
+                                                            Log.i(TAG, "App launched successfully: ${matchedRule.packageName}")
+                                                        }
+                                                    } catch (e: Exception) {
+                                                        if (cachedEnableLogging) {
+                                                            Log.e(TAG, "Failed to launch app in delayed task: ${matchedRule.packageName}", e)
+                                                        }
+                                                    }
+                                                }, 150)
+                                                
                                                 result = true
                                             } else {
                                                 if (cachedEnableLogging) {
