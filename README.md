@@ -8,12 +8,21 @@
 
 ## 功能特性
 
-- 🚀 **快速启动**：通过拨号盘输入暗码即可启动应用
-- ⚙️ **灵活配置**：支持自定义暗码前缀和后缀
-- 📱 **应用管理**：支持手动输入包名或从已安装应用列表选择
-- 🔧 **调试控制**：支持开启/关闭日志记录和 Toast 弹窗
+- 🚀 **快速启动**：通过拨号盘输入暗码即可瞬间启动指定应用
+- ⚙️ **灵活配置**：支持自定义暗码前缀和后缀（支持消除系统输入时自动产生的空格/横杠干扰）
+- 🛡️ **应用密码保护**：
+  - 支持图案密码（含错误晃动与震动反馈）及系统指纹双重解锁
+  - 提供三种智能锁定策略：返回后台立即锁定、延时锁定（如5分钟后）、锁屏后锁定
+  - 内置防爆破安全机制：连续错误5次强制冷却30秒
+- 📱 **强大的应用管理**：
+  - 支持手动输入包名或从已安装应用列表选择
+  - 列表支持高级筛选：显示/隐藏系统应用、按名称/包名/安装时间/更新时间排序及反转顺序
+  - 列表带全局缓存与精准的滚动位置保持体验
+- 🎨 **现代化 UI 设计**：
+  - 完美适配 Android 15/16 状态栏与导航栏沉浸（Edge-to-Edge）
+  - 支持手动切换“浅色模式”、“暗色模式”或“跟随系统”，即时生效
 - 📤 **导入导出**：支持规则的 JSON 格式导入导出
-- 🎨 **Material Design**：简洁美观的用户界面
+- 🔧 **调试控制**：支持开启/关闭日志记录和 Toast 弹窗（自定义弹窗位置防止遮挡）
 
 ## 兼容性
 
@@ -60,6 +69,9 @@
 - **全局后缀**：暗码的后缀，默认 `#*#*`
 - **日志记录**：开启后输出详细调试日志
 - **Toast 弹窗**：开启后显示暗码检测和应用启动提示
+- **密码保护**：启用/禁用图案锁及指纹解锁功能
+- **锁定方式**：选择返回后台的锁定策略（立即锁定、延时锁定或锁屏后锁定）
+- **主题模式**：选择“浅色模式”、“暗色模式”或“跟随系统”
 
 ## 调试方法
 
@@ -101,7 +113,7 @@ dievanmabohao/
 │   │   ├── java/com/diev/mabohao/
 │   │   │   ├── data/           # 数据层
 │   │   │   │   ├── Rule.kt     # 规则数据类
-│   │   │   │   └── RuleRepository.kt  # 规则存储
+│   │   │   │   └── RuleRepository.kt  # 数据存储、常量定义
 │   │   │   ├── hook/           # Hook 入口
 │   │   │   │   └── HookEntry.kt
 │   │   │   ├── ui/             # 用户界面
@@ -109,11 +121,15 @@ dievanmabohao/
 │   │   │   │   ├── SettingsActivity.kt
 │   │   │   │   ├── RuleEditActivity.kt
 │   │   │   │   ├── AppSelectorActivity.kt
-│   │   │   │   └── RuleAdapter.kt
+│   │   │   │   ├── PatternLockActivity.kt # 解锁界面
+│   │   │   │   ├── PatternSetupActivity.kt # 密码设置界面
+│   │   │   │   ├── RuleAdapter.kt
+│   │   │   │   └── widget/PatternLockView.kt # 核心图案锁控件
 │   │   │   └── util/           # 工具类
 │   │   │       ├── ImportExportUtil.kt
+│   │   │       ├── AppCacheHelper.kt   # 应用列表缓存及排序控制
 │   │   │       └── LSPosedUtil.kt
-│   │   ├── res/                # 资源文件
+│   │   ├── res/                # 资源文件 (适配了 values-night, daynight themes 等)
 │   │   └── AndroidManifest.xml
 │   ├── build.gradle.kts
 │   └── proguard-rules.pro
@@ -150,6 +166,7 @@ dievanmabohao/
 | [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) | 1.3.1 | Xposed Hook 框架 |
 | [KavaRef](https://github.com/HighCapable/KavaRef) | 1.0.2 | 反射工具库 |
 | [Gson](https://github.com/google/gson) | 2.11.0 | JSON 解析 |
+| [Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) | 1.1.0 | 系统指纹生物识别 |
 | Material Components | 1.11.0 | UI 组件 |
 
 ## 常见问题
