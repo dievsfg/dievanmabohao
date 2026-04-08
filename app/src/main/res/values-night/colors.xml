@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主界面颜色 - 暗色模式 -->
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#9E9E9E</color>
+    <color name="divider">#424242</color>
+    <color name="toolbar_bg">#1E1E1E</color>
+    <color name="toolbar_text">#FFFFFF</color>
+    <color name="status_bar">#121212</color>
+    <color name="card_bg">#1E1E1E</color>
+    <color name="icon_tint">#B0B0B0</color>
+
+    <!-- 图案锁屏 - 暗色模式 -->
+    <color name="pattern_lock_bg">#FF1A1A2E</color>
+    <color name="pattern_lock_text">#FFFFFFFF</color>
+    <color name="pattern_lock_text_secondary">#B3FFFFFF</color>
+    <color name="pattern_lock_fingerprint_ring">#60FFFFFF</color>
+</resources>

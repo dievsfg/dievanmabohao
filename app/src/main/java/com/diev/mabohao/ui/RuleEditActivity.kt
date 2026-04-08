@@ -8,6 +8,9 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.diev.mabohao.R
 import com.diev.mabohao.data.Rule
 import com.diev.mabohao.data.RuleRepository
@@ -32,10 +35,27 @@ class RuleEditActivity : AppCompatActivity() {
         binding = ActivityRuleEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        setupWindowInsets()
         setupToolbar()
         loadRule()
         setupInputs()
         setupButtons()
+    }
+
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // 状态栏高度的 padding 加给 AppBarLayout
+            val appBarLayout = binding.root.getChildAt(0)
+            appBarLayout.updatePadding(top = insets.top)
+            
+            // 滚动视图底部增加导航栏高度的 padding
+            val scrollView = binding.root.getChildAt(1)
+            scrollView.updatePadding(bottom = insets.bottom)
+            
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun setupToolbar() {

@@ -14,6 +14,16 @@ object RuleRepository {
     const val KEY_ENABLE_TOAST = "enable_toast"
     const val KEY_RULES_TIMESTAMP = "rules_timestamp"
     
+    // 安全设置
+    const val KEY_LOCK_ENABLED = "lock_enabled"
+    const val KEY_LOCK_PATTERN = "lock_pattern"
+    const val KEY_FINGERPRINT_ENABLED = "fingerprint_enabled"
+    const val KEY_LOCK_STRATEGY = "lock_strategy"       // 0=立即, 1=延时, 2=锁屏后
+    const val KEY_LOCK_DELAY = "lock_delay"             // 延时时间(毫秒), 默认5分钟
+    
+    // 外观设置
+    const val KEY_THEME_MODE = "theme_mode"             // 0=跟随系统, 1=浅色, 2=暗色
+    
     private val gson = Gson()
 
     fun parseRules(json: String?): List<Rule> {

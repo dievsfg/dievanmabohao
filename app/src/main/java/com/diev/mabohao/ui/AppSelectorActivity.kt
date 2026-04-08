@@ -8,6 +8,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +41,7 @@ class AppSelectorActivity : AppCompatActivity() {
         binding = ActivityAppSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        setupWindowInsets()
         setupToolbar()
         setupRecyclerView()
         setupSwipeRefresh()
@@ -45,6 +49,22 @@ class AppSelectorActivity : AppCompatActivity() {
         setupFilterButton()
         observeApps()
         loadApps()
+    }
+
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // 状态栏高度的 padding 加给 AppBarLayout
+            val appBarLayout = binding.root.getChildAt(0)
+            appBarLayout.updatePadding(top = insets.top)
+            
+            // 为主内容区底部增加导航栏高度的 padding
+            val contentView = binding.root.getChildAt(1) // LinearLayout
+            contentView.updatePadding(bottom = insets.bottom)
+            
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun setupToolbar() {

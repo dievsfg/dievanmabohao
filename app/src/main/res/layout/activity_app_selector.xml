@@ -9,14 +9,18 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
+        app:elevation="0dp"
+        app:liftOnScroll="false"
+        android:background="@color/toolbar_bg">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/select_app"
-            app:navigationIcon="?attr/homeAsUpIndicator" />
+            app:titleTextColor="@color/toolbar_text"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="@color/toolbar_text" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout

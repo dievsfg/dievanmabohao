@@ -5,9 +5,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diev.mabohao.R
 import com.diev.mabohao.data.Rule
@@ -52,11 +57,35 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        setupWindowInsets()
         setupToolbar()
         setupRecyclerView()
         setupButtons()
         updateModuleStatus()
     }
+
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // 状态栏高度的 padding 加给 AppBarLayout
+            val appBarLayout = binding.root.getChildAt(0)
+            appBarLayout.updatePadding(top = insets.top)
+            
+            // FAB 增加导航栏高度的 margin
+            binding.fabAdd.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = 16.dpToPx() + insets.bottom
+            }
+            
+            // 滚动视图底部增加导航栏高度的 padding，让内容能滑到导航栏下面
+            val scrollView = binding.root.getChildAt(1) // NestedScrollView
+            scrollView.updatePadding(bottom = insets.bottom)
+            
+            WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     override fun onResume() {
         super.onResume()

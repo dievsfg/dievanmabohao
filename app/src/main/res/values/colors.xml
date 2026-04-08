@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 主色调 -->
     <color name="primary">#1976D2</color>
     <color name="primary_dark">#1565C0</color>
     <color name="primary_light">#42A5F5</color>
     <color name="accent">#FF5722</color>
+
+    <!-- 模块状态 -->
     <color name="status_active">#4CAF50</color>
     <color name="status_inactive">#F44336</color>
+
+    <!-- 主界面颜色 - 浅色模式 -->
     <color name="background">#FAFAFA</color>
     <color name="surface">#FFFFFF</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
     <color name="divider">#BDBDBD</color>
+    <color name="toolbar_bg">#1976D2</color>
+    <color name="toolbar_text">#FFFFFF</color>
+    <color name="status_bar">#1565C0</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="icon_tint">#616161</color>
+
+    <!-- 图案锁屏 - 浅色模式 -->
+    <color name="pattern_lock_bg">#FFF5F5F5</color>
+    <color name="pattern_lock_text">#FF212121</color>
+    <color name="pattern_lock_text_secondary">#99212121</color>
+    <color name="pattern_lock_fingerprint_ring">#30000000</color>
 </resources>
